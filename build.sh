@@ -31,3 +31,13 @@ git clone --depth 1 --branch develop https://github.com/Zimbra/zm-build.git
 cd zm-build
 ENV_CACHE_CLEAR_FLAG=true 
 ./build.pl --ant-options -DskipTests=true --git-default-tag=10.0.6,10.0.5,10.0.4,10.0.3,10.0.2,10.0.1,10.0.0-GA,10.0.0 --build-release-no=10.0.6 --build-type=FOSS --build-release=Daffodil --build-release-candidate=GA --build-thirdparty-server=files.zimbra.com --no-interactive
+
+tgz_file=$(find . -maxdepth 1 -type f -name '*.tgz' -print -quit)
+
+# Verificar si se encontró un archivo .tgz
+if [ -z "$tgz_file" ]; then
+    echo "No se encontró ningún archivo .tgz en el directorio actual."
+    exit 1
+fi
+
+cp "$tgz_file" /home/
