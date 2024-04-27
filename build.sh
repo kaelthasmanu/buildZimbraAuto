@@ -9,7 +9,7 @@ fi
 apt update
 
 #install git
-DEBIAN_FRONTEND=noninteractive apt install git lsb-release sudo -y
+DEBIAN_FRONTEND=noninteractive apt install git lsb-release sudo tzdata -y
 
 #create folder
 mkdir build-zimbra
