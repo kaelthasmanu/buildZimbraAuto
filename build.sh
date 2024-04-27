@@ -12,11 +12,7 @@ export PATH=/usr/local/bin:/usr/sbin:/usr/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr
 apt update && apt upgrade  -y
 
 #install git
-apt install git -y
-
-apt install lsb-release -y 
-
-lsb_release -a 
+apt install git lsb-release sudo -y
 
 #create folder
 mkdir build-zimbra
