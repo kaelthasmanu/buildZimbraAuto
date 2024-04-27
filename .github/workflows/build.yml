@@ -20,7 +20,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Build squid
+      - name: Cosas de Cuza
+        run: docker run --rm -it -v $PWD:$PWD -w $PWD ubuntu:20.04
+
+      - name: Build zimbra
         run: bash build.sh
 
       - name: Upload packages
