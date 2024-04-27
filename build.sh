@@ -5,14 +5,11 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-export DEBIAN_FRONTEND=noninteractive
-export PATH=/usr/local/bin:/usr/sbin:/usr/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/home/jad/bin:/usr/sbin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin
-
-#update && upgrade system
-apt update && apt upgrade  -y
+#update system
+apt update
 
 #install git
-apt install git lsb-release sudo -y
+DEBIAN_FRONTEND=noninteractive apt install git lsb-release sudo -y
 
 #create folder
 mkdir build-zimbra
@@ -27,14 +24,18 @@ zimbra-build-scripts/zimbra-build-helper.sh --install-deps
 
 mkdir installer-build
 cd installer-build
+
+#clone repository build tool
 git clone --depth 1 --branch develop https://github.com/Zimbra/zm-build.git
+
 cd zm-build
 ENV_CACHE_CLEAR_FLAG=true 
+
+#build...
 ./build.pl --ant-options -DskipTests=true --git-default-tag=10.0.6,10.0.5,10.0.4,10.0.3,10.0.2,10.0.1,10.0.0-GA,10.0.0 --build-release-no=10.0.6 --build-type=FOSS --build-release=Daffodil --build-release-candidate=GA --build-thirdparty-server=files.zimbra.com --no-interactive
 
-tgz_file=$(find . -maxdepth 5 -type f -name '*.tgz' -print -quit)
+tgz_file=$(find . -type f -name '*.tgz' -print -quit)
 
-# Verificar si se encontró un archivo .tgz
 if [ -z "$tgz_file" ]; then
     echo "No se encontró ningún archivo .tgz en el directorio actual."
     exit 1
