@@ -16,6 +16,8 @@ apt install git -y
 
 apt install lsb-release -y 
 
+lsb-release -a 
+
 #create folder
 mkdir build-zimbra
 
