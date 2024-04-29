@@ -13,7 +13,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Run Docker command
+    - name: Run Docker command and get dynamic directory name
+      id: docker_and_directory
       run: |
         # Ejecutar el comando Docker
         docker run --rm --name "zimbrabuild_ubuntu20" \
