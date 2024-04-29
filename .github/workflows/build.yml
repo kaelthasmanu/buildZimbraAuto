@@ -42,7 +42,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: zimbra-package
-        path: ${{steps.docker_and_directory.outputs.directory_name}}
+        path: ${{steps.docker_and_directory.outputs.directory_name}}*
         compression-level: 0
 
   release:
