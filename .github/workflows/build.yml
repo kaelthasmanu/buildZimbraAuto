@@ -54,10 +54,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: zimbra-package
-          path: ./pkgs
+          path: zimbra-package
           
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "./pkgs/*"
+          artifacts: "zimbra-package.zip"
           tag: ${{ github.ref_name }}
