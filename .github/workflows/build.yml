@@ -52,6 +52,7 @@ jobs:
         run: ls -R
 
       - name: Download packages
+        id: download_packages
         uses: actions/download-artifact@v4
         with:
           name: zimbra-package
@@ -72,6 +73,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./*.tgz
+          asset_path: ${{ steps.download_packages.outputs.artifact_paths }}
           asset_name: zcs-10.0.6_GA_0001.UBUNTU20_64.tgz
           asset_content_type: application/zip
