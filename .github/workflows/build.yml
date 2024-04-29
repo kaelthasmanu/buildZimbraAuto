@@ -1,34 +1,46 @@
-name: Build and Release
+name: Build and Publish
 
 on:
   push:
     branches:
       - main
-    tags:
-      - '*'
-  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        container: ['ubuntu:20.04']
-    container:
-      image: ${{ matrix.container }}
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Build zimbra
-        run: bash build.sh
+    - name: Run Docker command
+      run: |
+        # Ejecutar el comando Docker
+        docker run --rm --name "zimbrabuild_ubuntu20" \
+        -v ${{ github.workspace }}/volume:/home/git/BUILDS \
+        -v ${{ github.workspace }}/ssh:/root/.ssh \
+        -e BUILD_NO="0001" \
+        -e BUILD_RELEASE="DAFFODIL" \
+        -e BUILD_RELEASE_NO="10.0.6" \
+        -e BUILD_OS="UBUNTU20_64" \
+        -e BUILD_ARCH="amd64" \
+        -e BUILD_TYPE="FOSS" \
+        -e PKG_OS_TAG="u20" \
+        -e BUILD_RELEASE_CANDIDATE="GA" \
+        -e BUILD_THIRDPARTY_SERVER="files.zimbra.com" \
+        -e INTERACTIVE="0" \
+        docker.io/ovox/zimbrabuild-ubuntu20:latest
 
-      - name: Upload packages
-        uses: actions/upload-artifact@v2
-        with:
-          name: packages
-          path: /home/*.tgz
-  
+        # Obtener el nombre del directorio dinámico
+        DIRECTORY_NAME=$(ls -td ${{ github.workspace }}/volume/*/ | head -n1)
+        echo "::set-output name=directory_name::$DIRECTORY_NAME"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: zimbra-package
+        path: ${{ steps.docker_and_directory.outputs.directory_name }}/*.tgz
+
   release:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
@@ -37,10 +49,11 @@ jobs:
       - name: Download packages
         uses: actions/download-artifact@v2
         with:
-          name: packages
-          path: /home
+          name: zimbra-package
+          path: ./pkgs
+          
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "/home/*.tgz"
+          artifacts: "./pkgs/*.tgz"
           tag: ${{ github.ref_name }}

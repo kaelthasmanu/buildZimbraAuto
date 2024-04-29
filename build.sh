@@ -32,7 +32,8 @@ cd zm-build
 ENV_CACHE_CLEAR_FLAG=true 
 
 #build...
-./build.pl --ant-options -DskipTests=true --git-default-tag=10.0.4,10.0.3,10.0.2,10.0.1,10.0.0-GA,10.0.0 --build-release-no=10.0.0 --build-type=FOSS --build-release=Daffodil --build-release-candidate=GA --build-thirdparty-server=files.zimbra.com --no-interactive
+./build.pl --ant-options -DskipTests=true --git-default-tag=10.0.8,10.0.7,10.0.6,10.0.5,10.0.4,10.0.3,10.0.2,10.0.1,10.0.0-GA --build-release-no=10.0.8 --build-type=FOSS --build-release=LIBERTY --build-release-candidate=GA --build-thirdparty-server=files.zimbra.com --no-interactive
+
 
 tgz_file=$(find . -type f -name '*.tgz' -print -quit)
 
@@ -42,3 +43,5 @@ if [ -z "$tgz_file" ]; then
 fi
 
 cp "$tgz_file" /home/
+
+docker run --rm --name "zimbrabuild_ubuntu20" -v $PWD/volume:/home/git/BUILDS -v $PWD/ssh:/root/.ssh -e BUILD_NO="0001" -e BUILD_RELEASE="DAFFODIL" -e BUILD_RELEASE_NO="10.0.6" -e BUILD_OS="UBUNTU20_64" -e BUILD_ARCH="amd64" -e BUILD_TYPE="FOSS" -e PKG_OS_TAG="u20" -e BUILD_RELEASE_CANDIDATE="GA" -e BUILD_THIRDPARTY_SERVER="files.zimbra.com" -e INTERACTIVE="0" docker.io/ovox/zimbrabuild-ubuntu20:latest
