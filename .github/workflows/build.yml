@@ -48,14 +48,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Test artifact download 
-        run: ls -R
-
       - name: Download packages
         id: download_packages
         uses: actions/download-artifact@v4
         with:
           name: zimbra-package
+      
+      - name: Get list directory 
+        run: echo "$(ls -R)"
+
+      - name: Get directory
+        run: echo "$(pwd)"
+      
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.5
+        with: 
+          filename: zimbra.zip
 
       - name: Create release
         id: create_release
@@ -73,6 +81,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ${{ steps.download_packages.outputs.artifact_paths }}
-          asset_name: zcs-10.0.6_GA_0001.UBUNTU20_64.tgz
+          asset_path: ./zimbra.zip
+          asset_name: zimbra.zip
           asset_content_type: application/zip
