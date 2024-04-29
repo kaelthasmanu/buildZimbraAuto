@@ -35,7 +35,7 @@ jobs:
         # Obtener el nombre del directorio dinámico
         DIRECTORY_NAME=$(ls -td ${{ github.workspace }}/volume/*/ | head -n1)
         echo "$DIRECTORY_NAME"
-        echo "$(ls -td ${{ github.workspace }}/volume/$DIRECTORY_NAME/*/")
+        echo "$(ls -td ${{ github.workspace }}/volume/$DIRECTORY_NAME/*)"
         echo "directory_name=$DIRECTORY_NAME" >> "$GITHUB_ENV"
 
     - name: Upload artifact
