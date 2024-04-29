@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# set squid version
+ZIMBRA_VER="10.0.6"
