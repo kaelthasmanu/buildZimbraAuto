@@ -36,16 +36,7 @@ jobs:
         DIRECTORY_NAME=$(ls -td ${{ github.workspace }}/volume/*/ | head -n1)
         echo "$DIRECTORY_NAME"
         echo "$(ls -td $DIRECTORY_NAME*)"
-        echo "directory_name=$DIRECTORY_NAME" >> "$GITHUB_ENV"
-
-    - name: Verify dynamic directory existence
-      run: |
-        if [ -z "${{ env.directory_name }}" ]; then
-          echo "Dynamic directory not found. Exiting."
-          exit 1
-        else
-          echo "Dynamic directory found: ${{ env.directory_name }}"
-        fi
+        echo "directory_name=$DIRECTORY_NAME" >> "$GITHUB_ENV"      
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -53,33 +44,17 @@ jobs:
         name: zimbra-package
         path: ${{ env.directory_name }}
 
-    - name: Run Makefile release
-      run: make release
-      working-directory: ${{ github.workspace }}
-
   release:
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Test artifact download 
         run: ls -R
-      
-      - name: Test artifact
-        run: ls -R ${{env.directory_name}}
 
       - name: Download packages
         uses: actions/download-artifact@v4
         with:
           name: zimbra-package
-          
-      - name: Verify artifact existence
-        run: |
-          if [ ! -d "zimbra-package" ]; then
-            echo "Artifact directory not found. Exiting."
-            exit 1
-          else
-            echo "Artifact directory found: zimbra-package"
-          fi
 
       - name: Create release
         id: create_release
