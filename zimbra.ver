@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 
-# set squid version
-ZIMBRA_VER="10.0.6"
+# set zimbra version
+BUILD_RELEASE="DAFFODIL"
+ZIMBRA_VER="10.0.8"
+BUILD_OS="UBUNTU20_64"

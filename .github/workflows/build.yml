@@ -13,6 +13,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Read Zimbra variables from file
+      id: read_zimbra_variables
+      run: |
+        source zimbra.ver
+        echo "BUILD_RELEASE=$BUILD_RELEASE" >> $GITHUB_ENV
+        echo "BUILD_RELEASE_NO=$BUILD_RELEASE_NO" >> $GITHUB_ENV
+        echo "BUILD_OS=$BUILD_OS" >> $GITHUB_ENV
+
     - name: Run Docker command and get dynamic directory name
       id: docker_and_directory
       run: |
@@ -21,9 +29,9 @@ jobs:
         -v ${{ github.workspace }}/volume:/home/git/BUILDS \
         -v ${{ github.workspace }}/ssh:/root/.ssh \
         -e BUILD_NO="0001" \
-        -e BUILD_RELEASE="DAFFODIL" \
-        -e BUILD_RELEASE_NO="10.0.6" \
-        -e BUILD_OS="UBUNTU20_64" \
+        -e BUILD_RELEASE="${{ env.BUILD_RELEASE }}" \
+        -e BUILD_RELEASE_NO="${{ env.BUILD_RELEASE_NO }}" \
+        -e BUILD_OS="${{ env.BUILD_OS }}" \
         -e BUILD_ARCH="amd64" \
         -e BUILD_TYPE="FOSS" \
         -e PKG_OS_TAG="u20" \
