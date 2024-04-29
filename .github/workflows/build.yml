@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Run Docker command and get dynamic directory name
       id: docker_and_directory
@@ -48,7 +48,7 @@ jobs:
         fi
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: zimbra-package
         path: ${{ env.directory_name }}/*.tgz
@@ -59,7 +59,7 @@ jobs:
     needs: build
     steps:
       - name: Download packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: zimbra-package
           path: zimbra-package
