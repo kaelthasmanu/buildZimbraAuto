@@ -35,14 +35,14 @@ jobs:
         # Obtener el nombre del directorio dinámico
         DIRECTORY_NAME=$(ls -td ${{ github.workspace }}/volume/*/ | head -n1)
         echo "$DIRECTORY_NAME"
-        echo "$(ls -td $DIRECTORY_NAME/*)"
+        echo "$(ls -td $DIRECTORY_NAME*)"
         echo "directory_name=$DIRECTORY_NAME" >> "$GITHUB_ENV"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: zimbra-package
-        path: ${{steps.docker_and_directory.outputs.directory_name}}/*.tgz
+        path: ${{steps.docker_and_directory.outputs.directory_name}}*.tgz
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
