@@ -38,8 +38,8 @@ jobs:
         mkdir -p ${{ github.workspace }}/volume
 
         # Copiar config.build con versión actualizada al contexto del contenedor
-        sed -e "s/^BUILD_RELEASE_NO.*/BUILD_RELEASE_NO = ${{ env.BUILD_RELEASE_NO }}/" \
-            -e "s/^BUILD_RELEASE[[:space:]]*.*/BUILD_RELEASE = ${{ env.BUILD_RELEASE }}/" \
+        sed -e "s/^BUILD_RELEASE[[:space:]]*=.*/BUILD_RELEASE = ${{ env.BUILD_RELEASE }}/" \
+            -e "s/^BUILD_RELEASE_NO[[:space:]]*=.*/BUILD_RELEASE_NO = ${{ env.BUILD_RELEASE_NO }}/" \
             config.build > /tmp/config.build.patched
 
         # Ejecutar el contenedor construido
