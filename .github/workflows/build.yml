@@ -17,49 +17,68 @@ jobs:
       id: read_zimbra_variables
       run: |
         source zimbra.ver
-        echo "BUILD_RELEASE=$BUILD_RELEASE" >> $GITHUB_ENV
-        echo "BUILD_RELEASE_NO=$ZIMBRA_VER" >> $GITHUB_ENV
-        echo "BUILD_OS=$BUILD_OS" >> $GITHUB_ENV
+        echo "build_no=0001" >> "$GITHUB_OUTPUT"
+        echo "build_release=$BUILD_RELEASE" >> "$GITHUB_OUTPUT"
+        echo "build_release_no=$ZIMBRA_VER" >> "$GITHUB_OUTPUT"
+        echo "build_os=$BUILD_OS" >> "$GITHUB_OUTPUT"
 
     - name: Set up SSH key for GitHub (needed by zm-build)
       run: |
         mkdir -p ${{ github.workspace }}/ssh
-        echo "${{ secrets.BUILD_SSH_PRIVATE_KEY }}" > ${{ github.workspace }}/ssh/id_rsa
+        printf '%s\n' "${{ secrets.BUILD_SSH_PRIVATE_KEY }}" > ${{ github.workspace }}/ssh/id_rsa
         chmod 600 ${{ github.workspace }}/ssh/id_rsa
-        ssh-keyscan github.com >> ${{ github.workspace }}/ssh/known_hosts
+        ssh-keyscan -H github.com >> ${{ github.workspace }}/ssh/known_hosts
 
     - name: Build Docker image
       run: |
-        docker build -t zbs .
+        docker build --pull -t zbs .
 
     - name: Run Docker container and get dynamic directory name
       id: docker_and_directory
       run: |
+        set -euo pipefail
         mkdir -p ${{ github.workspace }}/volume
 
         # Ejecutar el contenedor construido pasando la versión como env vars
         docker run --rm --name "zbs_build" \
           -v ${{ github.workspace }}/volume:/home/git/zimbra/BUILDS \
           -v ${{ github.workspace }}/ssh:/root/.ssh:ro \
-          -e BUILD_RELEASE="${{ env.BUILD_RELEASE }}" \
-          -e BUILD_RELEASE_NO="${{ env.BUILD_RELEASE_NO }}" \
+          -e BUILD_NO="${{ steps.read_zimbra_variables.outputs.build_no }}" \
+          -e BUILD_RELEASE="${{ steps.read_zimbra_variables.outputs.build_release }}" \
+          -e BUILD_RELEASE_NO="${{ steps.read_zimbra_variables.outputs.build_release_no }}" \
+          -e BUILD_RELEASE_CANDIDATE="GA" \
+          -e BUILD_TYPE="FOSS" \
           zbs
 
         # Obtener el nombre del directorio dinámico generado por el build
-        DIRECTORY_NAME=$(ls -td ${{ github.workspace }}/volume/*/ | head -n1)
+        shopt -s nullglob
+        build_dirs=("${{ github.workspace }}/volume"/*/)
+
+        if [ ${#build_dirs[@]} -eq 0 ]; then
+          echo "No se generó ningún directorio dentro de volume/."
+          echo "Contenido actual del workspace:"
+          ls -la ${{ github.workspace }}
+          echo "Contenido actual de volume/:"
+          ls -la ${{ github.workspace }}/volume
+          exit 1
+        fi
+
+        DIRECTORY_NAME=$(printf '%s\n' "${build_dirs[@]}" | sort | tail -n1)
         echo "$DIRECTORY_NAME"
-        echo "$(ls -td $DIRECTORY_NAME*)"
         echo "directory_name=$DIRECTORY_NAME" >> "$GITHUB_ENV"
+        echo "directory_name=$DIRECTORY_NAME" >> "$GITHUB_OUTPUT"
 
     - name: Upload artifact
+      if: steps.docker_and_directory.outputs.directory_name != ''
       uses: actions/upload-artifact@v4
       with:
         name: zimbra-package
-        path: ${{ env.directory_name }}
+        path: ${{ steps.docker_and_directory.outputs.directory_name }}
 
   release:
     runs-on: ubuntu-latest
     needs: build
+    if: needs.build.result == 'success'
     steps:
       - name: Download packages
         id: download_packages
