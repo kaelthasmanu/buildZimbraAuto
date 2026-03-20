@@ -30,5 +30,8 @@ RUN ./zimbra-build-helper.sh --install-deps
 # Volume to retrieve builds
 VOLUME /home/git/zimbra/BUILDS/
 
-# Build Zimbra
-ENTRYPOINT ["/home/git/zimbra-build-scripts/zimbra-build-helper.sh", "--build-zimbra"]
+# Entrypoint wrapper: applies env vars to config.build before building
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

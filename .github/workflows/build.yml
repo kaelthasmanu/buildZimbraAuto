@@ -37,16 +37,12 @@ jobs:
       run: |
         mkdir -p ${{ github.workspace }}/volume
 
-        # Copiar config.build con versión actualizada al contexto del contenedor
-        sed -e "s/^BUILD_RELEASE[[:space:]]*=.*/BUILD_RELEASE = ${{ env.BUILD_RELEASE }}/" \
-            -e "s/^BUILD_RELEASE_NO[[:space:]]*=.*/BUILD_RELEASE_NO = ${{ env.BUILD_RELEASE_NO }}/" \
-            config.build > /tmp/config.build.patched
-
-        # Ejecutar el contenedor construido
+        # Ejecutar el contenedor construido pasando la versión como env vars
         docker run --rm --name "zbs_build" \
           -v ${{ github.workspace }}/volume:/home/git/zimbra/BUILDS \
           -v ${{ github.workspace }}/ssh:/root/.ssh:ro \
-          -v /tmp/config.build.patched:/home/git/zimbra-build-scripts/config.build:ro \
+          -e BUILD_RELEASE="${{ env.BUILD_RELEASE }}" \
+          -e BUILD_RELEASE_NO="${{ env.BUILD_RELEASE_NO }}" \
           zbs
 
         # Obtener el nombre del directorio dinámico generado por el build
