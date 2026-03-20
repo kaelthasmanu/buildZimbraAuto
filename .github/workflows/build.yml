@@ -21,30 +21,39 @@ jobs:
         echo "BUILD_RELEASE_NO=$ZIMBRA_VER" >> $GITHUB_ENV
         echo "BUILD_OS=$BUILD_OS" >> $GITHUB_ENV
 
-    - name: Run Docker command and get dynamic directory name
+    - name: Set up SSH key for GitHub (needed by zm-build)
+      run: |
+        mkdir -p ${{ github.workspace }}/ssh
+        echo "${{ secrets.BUILD_SSH_PRIVATE_KEY }}" > ${{ github.workspace }}/ssh/id_rsa
+        chmod 600 ${{ github.workspace }}/ssh/id_rsa
+        ssh-keyscan github.com >> ${{ github.workspace }}/ssh/known_hosts
+
+    - name: Build Docker image
+      run: |
+        docker build -t zbs .
+
+    - name: Run Docker container and get dynamic directory name
       id: docker_and_directory
       run: |
-        # Ejecutar el comando Docker
-        docker run --rm --name "zimbrabuild_ubuntu20" \
-        -v ${{ github.workspace }}/volume:/home/git/BUILDS \
-        -v ${{ github.workspace }}/ssh:/root/.ssh \
-        -e BUILD_NO="0001" \
-        -e BUILD_RELEASE="${{ env.BUILD_RELEASE }}" \
-        -e BUILD_RELEASE_NO="${{ env.BUILD_RELEASE_NO }}" \
-        -e BUILD_OS="${{ env.BUILD_OS }}" \
-        -e BUILD_ARCH="amd64" \
-        -e BUILD_TYPE="FOSS" \
-        -e PKG_OS_TAG="u20" \
-        -e BUILD_RELEASE_CANDIDATE="GA" \
-        -e BUILD_THIRDPARTY_SERVER="files.zimbra.com" \
-        -e INTERACTIVE="0" \
-        docker.io/ovox/zimbrabuild-ubuntu20:latest
+        mkdir -p ${{ github.workspace }}/volume
 
-        # Obtener el nombre del directorio dinámico
+        # Copiar config.build con versión actualizada al contexto del contenedor
+        sed -e "s/^BUILD_RELEASE_NO.*/BUILD_RELEASE_NO = ${{ env.BUILD_RELEASE_NO }}/" \
+            -e "s/^BUILD_RELEASE[[:space:]]*.*/BUILD_RELEASE = ${{ env.BUILD_RELEASE }}/" \
+            config.build > /tmp/config.build.patched
+
+        # Ejecutar el contenedor construido
+        docker run --rm --name "zbs_build" \
+          -v ${{ github.workspace }}/volume:/home/git/zimbra/BUILDS \
+          -v ${{ github.workspace }}/ssh:/root/.ssh:ro \
+          -v /tmp/config.build.patched:/home/git/zimbra-build-scripts/config.build:ro \
+          zbs
+
+        # Obtener el nombre del directorio dinámico generado por el build
         DIRECTORY_NAME=$(ls -td ${{ github.workspace }}/volume/*/ | head -n1)
         echo "$DIRECTORY_NAME"
         echo "$(ls -td $DIRECTORY_NAME*)"
-        echo "directory_name=$DIRECTORY_NAME" >> "$GITHUB_ENV"      
+        echo "directory_name=$DIRECTORY_NAME" >> "$GITHUB_ENV"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
