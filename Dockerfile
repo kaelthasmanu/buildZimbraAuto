@@ -24,6 +24,9 @@ RUN sed -i 's/sudo\ //g' ./zimbra-build-helper.sh
 # Install and pre-configure timezone (needed on Ubuntu 20.04)
 RUN if [ -f "/usr/bin/apt-get" ]; then DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata ; fi
 
+# Copy config.build into the build-scripts directory
+COPY config.build /home/git/zimbra-build-scripts/config.build
+
 # Install dependencies
 RUN ./zimbra-build-helper.sh --install-deps
 
